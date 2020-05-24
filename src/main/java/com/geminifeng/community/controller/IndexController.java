@@ -6,13 +6,11 @@ package com.geminifeng.community.controller;/**
  */
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @Description
- * @ClassName HelloController
+ * @ClassName IndexController
  * @Author SunBaoFeng
  * @date 2020.05.24 12:06
  */
