@@ -7,12 +7,20 @@ package com.geminifeng.community.controller;/**
 
 import com.geminifeng.community.dto.AccessTokenDTO;
 import com.geminifeng.community.dto.GithubUser;
+import com.geminifeng.community.mapper.UserMapper;
+import com.geminifeng.community.model.User;
 import com.geminifeng.community.provider.GithubProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 /**
  * @Description
@@ -31,8 +39,17 @@ public class AuthorizeController {
     @Value("${github.redirect.uri}")
     private String client_secret;
 
+    @Resource
+    private UserMapper userMapper;
+
+    @GetMapping("/getUser/{id}")
+    @ResponseBody
+    public User getUser(@PathVariable String id) {
+        return userMapper.getUserById(id);
+    }
+
     @GetMapping("/callback")
-    public String callback(@RequestParam(name = "code") String code, @RequestParam(name = "state") String state) {
+    public String callback(@RequestParam(name = "code") String code, @RequestParam(name = "state") String state, HttpServletRequest req) {
         //封装请求参数对象
         AccessTokenDTO accessToken = new AccessTokenDTO();
         accessToken.setClient_id(client_id);
@@ -43,8 +60,23 @@ public class AuthorizeController {
         //获得GitHub的Token
         String back_token = githubProvider.getAccessToken(accessToken);
         //获得user信息
-        GithubUser user = githubProvider.getUser(back_token);
-        System.out.println("user\t" + user);
-        return "index";
+        GithubUser githubUser = githubProvider.getUser(back_token);
+        System.out.println("user\t" + githubUser);
+        if (null != githubUser) {
+            //登录成功 写session 和 cookie
+            req.getSession().setAttribute("user", githubUser);
+
+            User user = new User();
+            user.setToken(UUID.randomUUID().toString());
+            user.setName(githubUser.getName());
+            user.setAccountId(String.valueOf(githubUser.getId()));
+            user.setGmtCreate(System.currentTimeMillis());
+            user.setGmtModified(System.currentTimeMillis());
+            userMapper.saveUser(user);
+            return "redirect:/";
+        } else {
+            //登录失败 重新登录
+            return "redirect:/";
+        }
     }
 }

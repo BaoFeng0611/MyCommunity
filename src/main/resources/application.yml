@@ -2,10 +2,15 @@ server:
   port: 8887
 
 
-
 github:
   client:
     id: 94fa10052219d9ecf0e1
     secret: 04abc15861db10333b68a6a5b019b4b20a0dda77
   Redirect:
     uri: http://localhost:8887/callback
+spring:
+  datasource:
+    url: jdbc:h2:~/MyDemo
+    username: sa
+    password: 123
+    driver-class-name: org.h2.Driver
