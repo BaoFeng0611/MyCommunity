@@ -5,8 +5,14 @@ package com.geminifeng.community.controller;/**
  * version: 1.0 <br>
  */
 
+import com.geminifeng.community.mapper.UserMapper;
+import com.geminifeng.community.model.User;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @Description
@@ -17,8 +23,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController {
 
+    @Resource
+    private UserMapper userMapper;
+
     @GetMapping("/")
-    public String index() {
+    public String index(HttpServletRequest req) {
+        Cookie[] cookies = req.getCookies();
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals("")) {
+                String token = cookie.getValue();
+                User user = userMapper.findByToken(token);
+                if (null != user) {
+                    req.getSession().setAttribute("user", user);
+                }
+                break;
+            }
+        }
         return "index";
     }
 }

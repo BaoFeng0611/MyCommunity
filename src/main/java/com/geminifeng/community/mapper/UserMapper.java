@@ -3,6 +3,7 @@ package com.geminifeng.community.mapper;
 import com.geminifeng.community.model.User;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 /**
@@ -17,4 +18,7 @@ public interface UserMapper {
 
     @Select("select * from USER where ID = #{id}")
     User getUserById(String id);
+
+    @Select("select * from User where token = #{token}")
+    User findByToken(@Param("token") String token);
 }

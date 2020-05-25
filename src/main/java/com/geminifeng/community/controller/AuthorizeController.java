@@ -19,7 +19,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.UUID;
 
 /**
@@ -49,7 +51,10 @@ public class AuthorizeController {
     }
 
     @GetMapping("/callback")
-    public String callback(@RequestParam(name = "code") String code, @RequestParam(name = "state") String state, HttpServletRequest req) {
+    public String callback(@RequestParam(name = "code") String code,
+                           @RequestParam(name = "state") String state,
+                           HttpServletRequest req,
+                           HttpServletResponse rsp) {
         //封装请求参数对象
         AccessTokenDTO accessToken = new AccessTokenDTO();
         accessToken.setClient_id(client_id);
@@ -67,12 +72,17 @@ public class AuthorizeController {
             req.getSession().setAttribute("user", githubUser);
 
             User user = new User();
-            user.setToken(UUID.randomUUID().toString());
+            String token = UUID.randomUUID().toString();
+            user.setToken(token);
             user.setName(githubUser.getName());
             user.setAccountId(String.valueOf(githubUser.getId()));
+            System.out.println("系统时间\t" + System.currentTimeMillis());
             user.setGmtCreate(System.currentTimeMillis());
             user.setGmtModified(System.currentTimeMillis());
+            System.out.println(user);
             userMapper.saveUser(user);
+            //cookie
+            rsp.addCookie(new Cookie("login_token", token));
             return "redirect:/";
         } else {
             //登录失败 重新登录
